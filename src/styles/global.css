@@ -188,6 +188,10 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .field input { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 9px; outline: none; color: var(--brown); background: var(--warm-white); font-size: 13px; transition: border-color .2s; }
 .field input:focus { border-color: var(--coral); }
 .field small { display: block; margin-top: 4px; color: var(--coral); font-size: 10px; }
+.consent-field { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.consent-field input { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 2px; accent-color: var(--coral); }
+.consent-error { display: block; margin-top: 4px; color: var(--coral); font-size: 10px; }
+.form-error-message { margin-bottom: 16px; padding: 13px 15px; border: 1px solid rgba(232,111,97,.3); border-radius: 11px; color: var(--coral); background: rgba(232,111,97,.08); font-size: 11px; line-height: 1.7; }
 .form-bottom { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 8px; padding-top: 19px; border-top: 1px solid var(--line); }
 .form-bottom p { color: var(--muted); font-size: 10px; }
 .back-link { display: inline-block; margin-top: 20px; color: var(--coral); font-size: 12px; font-weight: 600; }

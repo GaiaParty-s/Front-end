@@ -3,10 +3,48 @@ import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import Icon from '../components/Icons'
 import Navbar from '../components/Navbar'
+import { cadastrarNaPreLista } from '../services/preLista'
 
 const initialForm = { nome: '', cpf: '', nascimento: '', telefone: '', email: '' }
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
+
+const formatCpf = (value) =>
+  onlyDigits(value)
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+
+const formatPhone = (value) => {
+  const digits = onlyDigits(value).slice(0, 11)
+
+  if (digits.length <= 2) return digits.replace(/(\d{1,2})/, '($1')
+  if (digits.length <= 6) return digits.replace(/(\d{2})(\d+)/, '($1) $2')
+  if (digits.length <= 10) return digits.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3')
+  return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+}
+
+const isValidCpf = (value) => {
+  const digits = onlyDigits(value)
+  if (digits.length !== 11 || /^(\d)\1{10}$/.test(digits)) return false
+
+  const calculateDigit = (length) => {
+    const total = digits
+      .slice(0, length)
+      .split('')
+      .reduce((sum, digit, index) => sum + Number(digit) * (length + 1 - index), 0)
+    const remainder = (total * 10) % 11
+    return remainder === 10 ? 0 : remainder
+  }
+
+  return calculateDigit(9) === Number(digits[9]) && calculateDigit(10) === Number(digits[10])
+}
+
+const isCompleteName = (value) => {
+  const nameParts = value.trim().replace(/\s+/g, ' ').split(' ')
+  return nameParts.length >= 2 && nameParts.every((part) => part.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ'-]/g, '').length >= 2)
+}
 
 const calculateAge = (birthDate) => {
   const today = new Date()
@@ -21,29 +59,46 @@ function PreLista() {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [consentimento, setConsentimento] = useState(false)
 
   const updateField = ({ target: { name, value } }) => {
-    setForm({ ...form, [name]: value })
+    const formattedValue = name === 'cpf' ? formatCpf(value) : name === 'telefone' ? formatPhone(value) : value
+    setForm({ ...form, [name]: formattedValue })
     setErrors({ ...errors, [name]: '' })
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     const nextErrors = {}
     Object.entries(form).forEach(([field, value]) => {
       if (!value.trim()) nextErrors[field] = 'Preencha este campo.'
     })
-    if (form.cpf && onlyDigits(form.cpf).length !== 11) nextErrors.cpf = 'Informe um CPF com 11 dígitos.'
-    if (form.nascimento && calculateAge(form.nascimento) < 18) nextErrors.nascimento = 'A pré-lista é permitida apenas para maiores de 18 anos.'
-
+    if (form.nome && !isCompleteName(form.nome)) nextErrors.nome = 'Informe seu nome completo.'
+    if (form.cpf && !isValidCpf(form.cpf)) nextErrors.cpf = 'Informe um CPF válido.'
+    if (form.telefone && !/^\d{10,11}$/.test(onlyDigits(form.telefone))) nextErrors.telefone = 'Informe um telefone com DDD.'
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um e-mail válido.'
+    if (form.nascimento && (calculateAge(form.nascimento) < 18 || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para maiores de 18 anos.'
+    if (!consentimento) nextErrors.consentimento = 'Confirme o aceite para enviar seu cadastro.'
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
       return
     }
 
-    // Integração futura: validar CPF, consultar backend, aprovar cadastro e liberar pagamento.
-    setSent(true)
-    setForm(initialForm)
+    setSubmitting(true)
+    setSubmitError('')
+
+    try {
+      await cadastrarNaPreLista(form)
+      setSent(true)
+      setForm(initialForm)
+      setConsentimento(false)
+    } catch {
+      setSubmitError('Não foi possível enviar seu cadastro agora. Tente novamente em alguns instantes.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -65,6 +120,7 @@ function PreLista() {
                 <div><h3>Cadastro recebido!</h3><p>Seu envio foi registrado com sucesso. A aprovação e o pagamento serão conectados em uma próxima etapa.</p></div>
               </div>
             )}
+            {submitError && <div className="form-error-message">{submitError}</div>}
             <form className="prelist-form" onSubmit={handleSubmit} noValidate>
               <div className="form-heading">
                 <span>01</span>
@@ -78,7 +134,7 @@ function PreLista() {
               <div className="field-row">
                 <label className="field">
                   <span>CPF</span>
-                  <input name="cpf" value={form.cpf} onChange={updateField} placeholder="Somente números" inputMode="numeric" maxLength="14" />
+                  <input name="cpf" value={form.cpf} onChange={updateField} placeholder="000.000.000-00" inputMode="numeric" maxLength="14" autoComplete="off" />
                   {errors.cpf && <small>{errors.cpf}</small>}
                 </label>
                 <label className="field">
@@ -90,7 +146,7 @@ function PreLista() {
               <div className="field-row">
                 <label className="field">
                   <span>Telefone / WhatsApp</span>
-                  <input name="telefone" value={form.telefone} onChange={updateField} placeholder="(11) 99999-9999" inputMode="tel" />
+                  <input name="telefone" value={form.telefone} onChange={updateField} placeholder="(11) 99999-9999" inputMode="tel" maxLength="15" autoComplete="tel" />
                   {errors.telefone && <small>{errors.telefone}</small>}
                 </label>
                 <label className="field">
@@ -99,9 +155,17 @@ function PreLista() {
                   {errors.email && <small>{errors.email}</small>}
                 </label>
               </div>
+              <label className="consent-field">
+                <input type="checkbox" checked={consentimento} onChange={(event) => {
+                  setConsentimento(event.target.checked)
+                  setErrors({ ...errors, consentimento: '' })
+                }} />
+                <span>Autorizo o armazenamento dos meus dados para análise e contato sobre a pré-lista da Sunset Sessions.</span>
+              </label>
+              {errors.consentimento && <small className="consent-error">{errors.consentimento}</small>}
               <div className="form-bottom">
                 <p>Ao enviar, você confirma que possui mais de 18 anos.</p>
-                <button className="button" type="submit">Enviar cadastro <Icon name="arrow" size={17} /></button>
+                <button className="button" type="submit" disabled={submitting}>{submitting ? 'Enviando...' : 'Enviar cadastro'} {!submitting && <Icon name="arrow" size={17} />}</button>
               </div>
             </form>
             <Link className="back-link" to="/">← Voltar para o evento</Link>

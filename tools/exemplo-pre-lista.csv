@@ -1,0 +1,3 @@
+nome,cpf,nascimento,telefone,email
+Maria de Teste,529.982.247-25,01/01/1990,(11) 99999-9999,maria@example.com
+Nome Incompleto,111.111.111-11,01/01/1990,(11) 98888-8888,invalido@example.com

@@ -11,7 +11,7 @@ function Footer() {
             </span>
             <span>Sunset <em>Sessions</em></span>
           </Link>
-          <p>O pôr do sol encontra a música.<br />04 de julho de 2026 · 19h às 23h<br />Rua Lira Cearense, 400 · Salão de festas</p>
+          <p>O pôr do sol encontra a música.<br />04 de julho de 2026 · 18h às 23h<br />Rua Lira Cearense, 400 · Salão de festas</p>
         </div>
         <div>
           <h4>Explore</h4>

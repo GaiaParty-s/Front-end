@@ -9,7 +9,7 @@ function LineUp() {
         <div className="section-intro">
           <p className="eyebrow">Curadoria musical</p>
           <h2>Uma noite.<br /><em>Um artista.</em></h2>
-          <p>Sem trocas apressadas ou distrações. Das 19h às 23h, Hi-Cut conduz a pista em uma jornada pensada para acompanhar cada fase da noite.</p>
+          <p>Sem trocas apressadas ou distrações. Das 18h às 23h, Hi-Cut conduz a pista em uma jornada pensada para acompanhar cada fase da noite.</p>
         </div>
         <article className="featured-artist">
           <div className="artist-topline">

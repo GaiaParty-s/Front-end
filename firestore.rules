@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /preLista/{cadastroId} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'nome',
+          'cpf',
+          'nascimento',
+          'telefone',
+          'email',
+          'criadoEm',
+          'consentimento',
+          'status'
+        ])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 5
+        && request.resource.data.cpf is string
+        && request.resource.data.cpf.matches('^[0-9]{11}$')
+        && request.resource.data.nascimento is string
+        && request.resource.data.nascimento.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.telefone is string
+        && request.resource.data.telefone.matches('^[0-9]{10,11}$')
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && request.resource.data.criadoEm == request.time
+        && request.resource.data.consentimento == true
+        && request.resource.data.status == 'pendente';
+
+      allow read, update, delete: if false;
+    }
+  }
+}

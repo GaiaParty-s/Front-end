@@ -12,7 +12,7 @@ function Hero() {
           <h1>Sunset<br /><em>Sessions</em></h1>
           <p className="hero-subtitle">O pôr do sol encontra a música.</p>
           <div className="event-info">
-            <span><Icon name="calendar" size={18} /> 04 de julho · 19h às 23h</span>
+            <span><Icon name="calendar" size={18} /> 04 de julho · 18h às 23h</span>
             <span><Icon name="location" size={18} /> Rua Lira Cearense, 400</span>
           </div>
           <div className="hero-actions">
