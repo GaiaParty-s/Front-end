@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "deploy:firebase": "npm run build && npx firebase-tools deploy --project gaiasunset",
+    "deploy:rules": "npx firebase-tools deploy --only firestore:rules --project gaiasunset",
+    "deploy:vercel": "npx vercel --prod",
     "export:prelista": "node tools/exportar_pre_lista.mjs",
+    "prelista:atualizar": "python tools/validar_pre_lista.py atualizar",
     "lint": "eslint .",
     "preview": "vite preview"
   },

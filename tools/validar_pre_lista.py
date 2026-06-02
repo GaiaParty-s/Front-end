@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import subprocess
 import sys
 import unicodedata
 from datetime import date, datetime
@@ -16,6 +17,7 @@ CONSULTA_RECEITA = (
     "ConsultaSituacao/ConsultaPublica.asp"
 )
 DEFAULT_OUTPUT = Path("private-data")
+FIRESTORE_EXPORT = DEFAULT_OUTPUT / "cadastros-firestore.csv"
 
 ALIASES = {
     "nome": {"nome", "nome completo", "nome_completo"},
@@ -192,14 +194,36 @@ def consolidate(review_path: Path, output_dir: Path) -> None:
     print(f"Consolidação concluída: {len(approved)} aprovado(s), {len(pending)} pendência(s).")
 
 
+def update_from_firestore(output_dir: Path) -> None:
+    npm_command = "npm.cmd" if sys.platform == "win32" else "npm"
+    print("Exportando cadastros do Firestore...")
+    try:
+        subprocess.run([npm_command, "run", "export:prelista"], check=True)
+    except FileNotFoundError as error:
+        raise ValueError("O npm não foi encontrado. Confirme a instalação do Node.js.") from error
+    except subprocess.CalledProcessError as error:
+        raise ValueError(
+            "A exportação falhou. Confirme a chave private-data/firebase-service-account.json."
+        ) from error
+
+    export_path = output_dir / FIRESTORE_EXPORT.name
+    print("Analisando cadastros exportados...")
+    analyze(export_path, output_dir)
+    print("Fila pronta para conferência manual na Receita Federal.")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("acao", choices=("analisar", "consolidar"))
-    parser.add_argument("arquivo", type=Path)
+    parser.add_argument("acao", choices=("atualizar", "analisar", "consolidar"))
+    parser.add_argument("arquivo", type=Path, nargs="?")
     parser.add_argument("--saida", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
     try:
-        if args.acao == "analisar":
+        if args.acao == "atualizar":
+            update_from_firestore(args.saida)
+        elif not args.arquivo:
+            raise ValueError(f"A ação {args.acao} exige o caminho de um arquivo CSV.")
+        elif args.acao == "analisar":
             analyze(args.arquivo, args.saida)
         else:
             consolidate(args.arquivo, args.saida)

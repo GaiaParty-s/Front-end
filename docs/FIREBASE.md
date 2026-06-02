@@ -43,7 +43,13 @@ Use a CLI sob demanda:
 ```bash
 npx firebase-tools login
 npm run build
-npx firebase-tools deploy
+npm run deploy:firebase
+```
+
+Se as regras do banco ainda não estiverem publicadas, publique-as primeiro:
+
+```bash
+npm run deploy:rules
 ```
 
 O deploy publica:

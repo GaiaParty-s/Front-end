@@ -10,13 +10,19 @@ No console Firebase, acesse **Project settings > Service accounts**, gere uma no
 private-data/firebase-service-account.json
 ```
 
-Execute:
+Para exportar e analisar tudo automaticamente, execute:
 
 ```bash
-npm run export:prelista
+npm run prelista:atualizar
 ```
 
-O comando cria `private-data/cadastros-firestore.csv`. A pasta inteira está ignorada pelo Git.
+O comando cria:
+
+- `private-data/cadastros-firestore.csv`: cópia integral dos cadastros.
+- `private-data/resultado-local.csv`: resultado das validações automáticas.
+- `private-data/fila-conferencia-receita.csv`: somente cadastros aptos à revisão manual.
+
+A pasta inteira está ignorada pelo Git.
 
 ## 2. Ou prepare outro CSV
 
@@ -28,13 +34,13 @@ nome,cpf,nascimento,telefone,email
 
 A data de nascimento pode estar em `DD/MM/AAAA` ou `AAAA-MM-DD`.
 
-## 3. Faça a análise automática
+## 3. Faça a análise automática de um CSV avulso
 
 ```bash
 python tools/validar_pre_lista.py analisar private-data/cadastros-firestore.csv
 ```
 
-O comando cria em `private-data/`:
+Use este comando somente quando quiser analisar um CSV diferente da exportação do Firestore. Ele cria em `private-data/`:
 
 - `resultado-local.csv`: resultado de CPF, nome completo, telefone, maioridade e duplicidade.
 - `fila-conferencia-receita.csv`: somente cadastros aprovados localmente.
