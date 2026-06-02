@@ -13,7 +13,7 @@ function LineUp() {
         </div>
         <article className="featured-artist">
           <div className="artist-topline">
-            <span>19:00 — 23:00</span>
+            <span>18:00 — 23:00</span>
             <strong>Exclusive set</strong>
           </div>
           <p>Sunset Sessions apresenta</p>
