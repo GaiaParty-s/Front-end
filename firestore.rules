@@ -29,5 +29,15 @@ service cloud.firestore {
 
       allow read, update, delete: if false;
     }
+
+    match /Produtos/{produtoId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /ingressos/{ingressoId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

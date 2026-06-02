@@ -1,30 +1,24 @@
 import Icon from './Icons'
 
-const youtubeChannelUrl = 'https://youtube.com/@hicuttv?si=Ge2azto-MAOHFoYR'
-
 function LineUp() {
   return (
     <section className="section lineup" id="line-up">
       <div className="container lineup-grid">
         <div className="section-intro">
           <p className="eyebrow">Curadoria musical</p>
-          <h2>Uma noite.<br /><em>Um artista.</em></h2>
-          <p>Sem trocas apressadas ou distrações. Das 18h às 23h, Hi-Cut conduz a pista em uma jornada pensada para acompanhar cada fase da noite.</p>
+          <h2>O pôr do sol<br /><em>guarda segredos.</em></h2>
+          <p>A pista já tem hora para começar, mas ainda não revelou tudo. Uma experiência cuidadosamente escolhida está tomando forma para conduzir a noite das 18h às 23h.</p>
         </div>
-        <article className="featured-artist">
+        <article className="featured-artist lineup-teaser">
           <div className="artist-topline">
             <span>18:00 — 23:00</span>
-            <strong>Exclusive set</strong>
+            <strong>Edição limitada</strong>
           </div>
           <p>Sunset Sessions apresenta</p>
-          <h3>Hi-Cut</h3>
+          <h3>Em breve</h3>
           <div className="artist-footer">
-            <span>All night long</span>
-            {youtubeChannelUrl ? (
-              <a className="youtube-link" href={youtubeChannelUrl} target="_blank" rel="noreferrer">Ouvir no YouTube <Icon name="arrow" size={15} /></a>
-            ) : (
-              <span className="youtube-link is-disabled">Canal no YouTube · em breve</span>
-            )}
+            <span>Curadoria especial</span>
+            <span className="youtube-link is-disabled">Novidades a caminho <Icon name="arrow" size={15} /></span>
           </div>
         </article>
       </div>

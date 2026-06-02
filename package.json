@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "catalogo:baixar": "node tools/gerenciar_catalogo.mjs baixar",
+    "catalogo:publicar": "node tools/gerenciar_catalogo.mjs publicar",
     "deploy:firebase": "npm run build && npx firebase-tools deploy --project gaiasunset",
     "deploy:rules": "npx firebase-tools deploy --only firestore:rules --project gaiasunset",
     "deploy:vercel": "npx vercel --prod",

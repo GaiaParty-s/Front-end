@@ -13,7 +13,7 @@ function ProductCard({ product }) {
       <div className="product-content">
         <div className="product-meta">
           <span>{product.categoria}</span>
-          <small className={product.estoque <= 5 ? 'low-stock' : ''}>{product.estoque <= 5 ? 'Últimas unidades' : 'Em estoque'}</small>
+          {product.estoque !== null && <small className={product.estoque <= 5 ? 'low-stock' : ''}>{product.estoque <= 5 ? 'Últimas unidades' : 'Em estoque'}</small>}
         </div>
         <h3>{product.nome}</h3>
         <p>{product.descricao}</p>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import produtos from '../data/produtos'
+import { useProdutos } from '../hooks/useCatalogo'
 import ProductCard from './ProductCard'
 
 const filters = [
@@ -13,6 +13,7 @@ const filters = [
 
 function BarProducts() {
   const [activeFilter, setActiveFilter] = useState('Todos')
+  const produtos = useProdutos()
   const availableProducts = produtos.filter((product) => product.ativo && (activeFilter === 'Todos' || product.categoria === activeFilter))
 
   return (
