@@ -2,10 +2,10 @@ import { useState } from 'react'
 
 const questions = [
   ['Qual é a idade mínima para entrar?', 'A entrada e o consumo de bebidas são permitidos somente para maiores de 18 anos. Leve um documento oficial com foto.'],
-  ['Como funciona a pré-lista?', 'Você envia seus dados para uma aprovação inicial. Nesta versão demonstrativa, o cadastro é apenas simulado.'],
-  ['Quais são as formas de pagamento?', 'O checkout definitivo terá integração com pagamento externo. Por enquanto, a confirmação exibida é demonstrativa.'],
+  ['Como funciona a pré-lista?', 'Você envia seus dados para acompanhar a abertura dos ingressos. Como a edição é restrita e limitada, entrar na lista é a melhor forma de receber as próximas informações.'],
+  ['Os ingressos já estão disponíveis?', 'Ainda não. A venda será aberta em breve e a disponibilidade será limitada. Entre na pré-lista para acompanhar as novidades.'],
   ['Preciso apresentar comprovante?', 'Sim. Após a futura confirmação de pagamento, o comprovante digital será enviado para o e-mail cadastrado.'],
-  ['Como retiro os produtos reservados no bar?', 'As reservas aprovadas poderão ser retiradas durante o evento no balcão do Bar Sunset mediante identificação.'],
+  ['Onde e quando acontece a Sunset Sessions?', 'No dia 04 de julho de 2026, das 19h às 23h, na Rua Lira Cearense, 400, no salão de festas.'],
 ]
 
 function FAQ() {

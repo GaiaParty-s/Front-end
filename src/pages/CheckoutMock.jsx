@@ -45,7 +45,9 @@ function CheckoutMock() {
                 <div><small>{isProduct ? item.categoria : 'Ingresso individual'}</small><h3>{item.nome}</h3><p>{isProduct ? item.descricao : `Disponível até ${item.dataLimite}`}</p></div>
               </div>
               <div className="order-total"><span>Total</span><strong>{formatCurrency(item.preco)}</strong></div>
-              {confirmed ? (
+              {!isProduct ? (
+                <div className="mock-unavailable"><Icon name="ticket" size={19} /><span>Ingressos ainda não disponíveis. Entre na pré-lista para acompanhar a abertura.</span></div>
+              ) : confirmed ? (
                 <div className="mock-confirmation"><Icon name="check" size={19} /><span>Reserva simulada com sucesso.</span></div>
               ) : (
                 <button className="button button-wide" type="button" onClick={() => setConfirmed(true)}>Simular reserva <Icon name="arrow" size={17} /></button>

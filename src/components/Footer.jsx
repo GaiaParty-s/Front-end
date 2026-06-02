@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import icon from '../assets/icon.png'
 
 function Footer() {
   return (
@@ -8,11 +7,11 @@ function Footer() {
         <div>
           <Link className="brand" to="/">
             <span className="brand-sun">
-              <img src={icon} alt="" />
+              <img src="/icon.png" alt="" />
             </span>
             <span>Sunset <em>Sessions</em></span>
           </Link>
-          <p>O pôr do sol encontra a música.<br />São Paulo · Julho 2026</p>
+          <p>O pôr do sol encontra a música.<br />04 de julho de 2026 · 19h às 23h<br />Rua Lira Cearense, 400 · Salão de festas</p>
         </div>
         <div>
           <h4>Explore</h4>

@@ -94,6 +94,14 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .artist-row small { color: var(--muted); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
 .artist-row h3 { margin-top: 2px; font-size: 28px; }
 .artist-row strong { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; color: var(--orange); font-family: 'Cormorant Garamond'; font-size: 12px; }
+.featured-artist { padding: 31px; border: 1px solid rgba(232,111,97,.28); border-radius: 22px; background: rgba(255,249,242,.62); box-shadow: var(--shadow); }
+.artist-topline, .artist-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.artist-topline span, .artist-topline strong, .artist-footer > span:first-child { color: var(--coral); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+.featured-artist > p { margin-top: 53px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; }
+.featured-artist h3 { margin: 4px 0 45px; color: var(--brown); font-size: clamp(72px, 10vw, 112px); font-weight: 700; line-height: .78; }
+.youtube-link { display: inline-flex; align-items: center; gap: 6px; color: var(--coral); font-size: 11px; font-weight: 600; transition: opacity .2s; }
+.youtube-link:hover { opacity: .68; }
+.youtube-link.is-disabled { color: var(--muted); opacity: .72; }
 
 .tickets { background: var(--warm-white); }
 .ticket-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 46px; }
@@ -106,6 +114,11 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .ticket-card small { display: block; min-height: 35px; color: var(--muted); font-size: 11px; }
 .ticket-card .button { width: 100%; margin-top: 12px; }
 .ticket-card.is-sold { opacity: .7; }
+.ticket-coming { display: flex; align-items: center; gap: 20px; width: min(780px, 100%); margin: 42px auto 0; padding: 25px; border: 1px solid var(--line); border-radius: 18px; background: #fffdf9; box-shadow: var(--shadow); }
+.ticket-coming > div:nth-child(2) { flex: 1; }
+.ticket-coming p { color: var(--coral); font-size: 10px; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; }
+.ticket-coming h3 { margin: 2px 0 4px; font-size: 30px; }
+.ticket-coming span { display: block; color: var(--muted); font-size: 11px; line-height: 1.7; }
 
 .bar-products { background: #f7e5d3; }
 .section-heading-row { display: flex; align-items: end; justify-content: space-between; gap: 30px; }
@@ -116,10 +129,10 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 .product-card { overflow: hidden; border-radius: 18px; background: #fffdf9; box-shadow: 0 4px 14px rgba(92,58,46,.04); transition: .25s; }
 .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-.product-image { position: relative; display: grid; place-items: center; height: 160px; overflow: hidden; background: linear-gradient(135deg, #f9d2b4, #ef9d78); }
+.product-image { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: linear-gradient(135deg, #f9d2b4, #ef9d78); }
 .product-image::before { position: absolute; width: 100px; height: 100px; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; content: ''; }
 .product-image span { z-index: 1; color: rgba(255,255,255,.85); font-family: 'Cormorant Garamond'; font-size: 42px; font-weight: 700; }
-.product-image img { position: absolute; z-index: 2; width: 100%; height: 100%; object-fit: cover; }
+.product-image img { position: absolute; z-index: 2; width: 100%; height: 100%; padding: 12px; object-fit: contain; object-position: center; background: #fff9f2; }
 .category-whisky, .category-licor { background: linear-gradient(135deg, #d69c72, #a9674b); }
 .category-combo { background: linear-gradient(135deg, #f5bd9a, #dc755f); }
 .category-energetico { background: linear-gradient(135deg, #e8c9a5, #d9824b); }
@@ -190,6 +203,7 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .order-total strong { font-family: 'Cormorant Garamond'; font-size: 38px; }
 .checkout-disclaimer { display: block; margin-top: 11px; color: var(--muted); font-size: 10px; text-align: center; }
 .mock-confirmation { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 99px; color: #5d8c60; background: rgba(107,154,105,.11); font-size: 12px; font-weight: 600; }
+.mock-unavailable { display: flex; align-items: center; gap: 8px; padding: 13px; border-radius: 12px; color: var(--orange); background: rgba(217,130,75,.1); font-size: 11px; font-weight: 600; line-height: 1.6; }
 
 @media (max-width: 900px) {
   .section { padding: 83px 0; }
@@ -223,6 +237,8 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
   .hero-art { min-height: min(72vh, 455px); width: 100%; margin-left: 0; }
   .banner-frame { right: 50%; width: min(292px, 82vw); height: min(438px, 68vh); border-width: 4px; border-radius: 18px; transform: translateX(50%); }
   .highlight-grid, .ticket-grid, .product-grid { grid-template-columns: 1fr; }
+  .ticket-coming { align-items: flex-start; flex-direction: column; }
+  .ticket-coming .button { width: 100%; }
   .highlight-card { padding: 21px; }
   .section-heading-row { display: block; }
   .bar-note { margin-top: 17px; }

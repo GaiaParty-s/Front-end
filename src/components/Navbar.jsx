@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import icon from '../assets/icon.png'
 
 function Navbar() {
   const [open, setOpen] = useState(false)
@@ -13,7 +12,7 @@ function Navbar() {
       <div className="container nav-inner">
         <Link className="brand" to="/" onClick={closeMenu}>
           <span className="brand-sun">
-            <img src={icon} alt="" />
+            <img src="/icon.png" alt="" />
           </span>
           <span>Sunset <em>Sessions</em></span>
         </Link>
@@ -28,7 +27,7 @@ function Navbar() {
           <a href={`${homePrefix}#ingressos`} onClick={closeMenu}>Ingressos</a>
           <a href={`${homePrefix}#bar`} onClick={closeMenu}>Bar</a>
           <a href={`${homePrefix}#contato`} onClick={closeMenu}>Contato</a>
-          <a className="button button-small" href={`${homePrefix}#ingressos`} onClick={closeMenu}>Comprar ingresso</a>
+          <Link className="button button-small" to="/pre-lista" onClick={closeMenu}>Entrar na pré-lista</Link>
         </nav>
       </div>
     </header>
