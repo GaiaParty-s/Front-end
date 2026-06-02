@@ -6,19 +6,21 @@ function LineUp() {
       <div className="container lineup-grid">
         <div className="section-intro">
           <p className="eyebrow">Curadoria musical</p>
-          <h2>O pôr do sol<br /><em>guarda segredos.</em></h2>
-          <p>A pista já tem hora para começar, mas ainda não revelou tudo. Uma experiência cuidadosamente escolhida está tomando forma para conduzir a noite das 18h às 23h.</p>
+          <h2>O pôr do sol<br /><em>tem comando.</em></h2>
+          <p>Hi-Cut está confirmado para conduzir a pista da Sunset Sessions. Uma curadoria pensada para acompanhar o fim de tarde e transformar a noite em uma experiência restrita.</p>
         </div>
-        <article className="featured-artist lineup-teaser">
+        <article className="featured-artist">
           <div className="artist-topline">
             <span>18:00 — 23:00</span>
-            <strong>Edição limitada</strong>
+            <strong>DJ set</strong>
           </div>
           <p>Sunset Sessions apresenta</p>
-          <h3>Em breve</h3>
+          <h3>Hi-Cut</h3>
           <div className="artist-footer">
-            <span>Curadoria especial</span>
-            <span className="youtube-link is-disabled">Novidades a caminho <Icon name="arrow" size={15} /></span>
+            <span>Curadoria confirmada</span>
+            <a className="youtube-link" href="https://youtube.com/@hicuttv?si=Ge2azto-MAOHFoYR" target="_blank" rel="noreferrer">
+              Canal do artista <Icon name="arrow" size={15} />
+            </a>
           </div>
         </article>
       </div>

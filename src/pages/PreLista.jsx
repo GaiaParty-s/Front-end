@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import { cadastrarNaPreLista } from '../services/preLista'
 
 const initialForm = { nome: '', cpf: '', nascimento: '', telefone: '', email: '' }
+const EVENT_DATE = new Date('2026-07-04T12:00:00')
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
 
@@ -47,11 +48,10 @@ const isCompleteName = (value) => {
 }
 
 const calculateAge = (birthDate) => {
-  const today = new Date()
   const birth = new Date(`${birthDate}T12:00:00`)
-  let age = today.getFullYear() - birth.getFullYear()
-  const month = today.getMonth() - birth.getMonth()
-  if (month < 0 || (month === 0 && today.getDate() < birth.getDate())) age -= 1
+  let age = EVENT_DATE.getFullYear() - birth.getFullYear()
+  const month = EVENT_DATE.getMonth() - birth.getMonth()
+  if (month < 0 || (month === 0 && EVENT_DATE.getDate() < birth.getDate())) age -= 1
   return age
 }
 
@@ -79,7 +79,7 @@ function PreLista() {
     if (form.cpf && !isValidCpf(form.cpf)) nextErrors.cpf = 'Informe um CPF válido.'
     if (form.telefone && !/^\d{10,11}$/.test(onlyDigits(form.telefone))) nextErrors.telefone = 'Informe um telefone com DDD.'
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um e-mail válido.'
-    if (form.nascimento && (calculateAge(form.nascimento) < 18 || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para maiores de 18 anos.'
+    if (form.nascimento && (calculateAge(form.nascimento) < 18 || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para quem terá 18 anos ou mais em 04/07/2026.'
     if (!consentimento) nextErrors.consentimento = 'Confirme o aceite para enviar seu cadastro.'
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -95,7 +95,7 @@ function PreLista() {
       setForm(initialForm)
       setConsentimento(false)
     } catch {
-      setSubmitError('Não foi possível enviar seu cadastro agora. Tente novamente em alguns instantes.')
+      setSubmitError('Este CPF já está cadastrado na pré-lista ou os dados foram recusados pela validação.')
     } finally {
       setSubmitting(false)
     }
@@ -164,7 +164,7 @@ function PreLista() {
               </label>
               {errors.consentimento && <small className="consent-error">{errors.consentimento}</small>}
               <div className="form-bottom">
-                <p>Ao enviar, você confirma que possui mais de 18 anos.</p>
+                <p>Ao enviar, você confirma que terá 18 anos ou mais em 04/07/2026.</p>
                 <button className="button" type="submit" disabled={submitting}>{submitting ? 'Enviando...' : 'Enviar cadastro'} {!submitting && <Icon name="arrow" size={17} />}</button>
               </div>
             </form>

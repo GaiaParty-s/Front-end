@@ -23,6 +23,7 @@ function Footer() {
           <h4>Mais</h4>
           <a href="/#bar">Bar Sunset</a>
           <Link to="/pre-lista">Pré-lista</Link>
+          <Link to="/lista">Lista pública</Link>
           <a href="https://chat.whatsapp.com/IEC8hUbzq76LcflTzzPb8i?s=cl&p=i&mlu=0">Contato</a>
         </div>
       </div>

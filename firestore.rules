@@ -17,6 +17,7 @@ service cloud.firestore {
         && request.resource.data.nome.size() >= 5
         && request.resource.data.cpf is string
         && request.resource.data.cpf.matches('^[0-9]{11}$')
+        && cadastroId == request.resource.data.cpf
         && request.resource.data.nascimento is string
         && request.resource.data.nascimento.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && request.resource.data.telefone is string
@@ -36,6 +37,11 @@ service cloud.firestore {
     }
 
     match /ingressos/{ingressoId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /preListaPublica/{cadastroId} {
       allow read: if true;
       allow write: if false;
     }

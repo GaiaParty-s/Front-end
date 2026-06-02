@@ -18,6 +18,8 @@ CONSULTA_RECEITA = (
 )
 DEFAULT_OUTPUT = Path("private-data")
 FIRESTORE_EXPORT = DEFAULT_OUTPUT / "cadastros-firestore.csv"
+RESULTADO_CONSULTA = DEFAULT_OUTPUT / "ResultadoConsulta.csv"
+EVENT_DATE = date(2026, 7, 4)
 
 ALIASES = {
     "nome": {"nome", "nome completo", "nome_completo"},
@@ -32,6 +34,10 @@ def normalize_header(value: str) -> str:
     text = unicodedata.normalize("NFD", value.strip().lower())
     text = "".join(char for char in text if unicodedata.category(char) != "Mn")
     return re.sub(r"\s+", " ", text.replace("_", " "))
+
+
+def truthy(value: str) -> bool:
+    return normalize_header(value) in {"sim", "s", "ok", "true", "1", "regular", "dados conferem"}
 
 
 def digits(value: str) -> str:
@@ -65,9 +71,8 @@ def parse_birth_date(value: str) -> date | None:
     return None
 
 
-def age_on_today(birth_date: date) -> int:
-    today = date.today()
-    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+def age_on_event(birth_date: date) -> int:
+    return EVENT_DATE.year - birth_date.year - ((EVENT_DATE.month, EVENT_DATE.day) < (birth_date.month, birth_date.day))
 
 
 def complete_name(value: str) -> bool:
@@ -111,6 +116,42 @@ def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> 
         writer.writerows(rows)
 
 
+def cpf_suffix(value: str) -> str:
+    cpf = digits(value)
+    return cpf[-4:] if len(cpf) >= 4 else ""
+
+
+def status_from_checks(issues: list[str], consulta: dict[str, str] | None = None) -> str:
+    if issues:
+        return "REPROVADO"
+    if not consulta:
+        return "PENDENTE"
+    name_matches = truthy(consulta.get("nome_confere", ""))
+    regular = normalize_header(consulta.get("status_receita", "")) == "regular"
+    processed = not consulta.get("processado") or truthy(consulta.get("processado", ""))
+    return "APROVADO" if name_matches and regular and processed else "REPROVADO"
+
+
+def local_issues(row: dict[str, str], columns: dict[str, str], cpf_count: dict[str, int]) -> tuple[list[str], date | None]:
+    cpf = digits(row.get(columns["cpf"], ""))
+    birth_date = parse_birth_date(row.get(columns["nascimento"], ""))
+    issues: list[str] = []
+    if not complete_name(row.get(columns["nome"], "")):
+        issues.append("nome incompleto")
+    if not valid_cpf(cpf):
+        issues.append("cpf inválido")
+    if cpf_count.get(cpf, 0) > 1:
+        issues.append("cpf duplicado")
+    if not birth_date:
+        issues.append("nascimento inválido")
+    elif not 18 <= age_on_event(birth_date) <= 120:
+        issues.append(f"menor de 18 anos em {EVENT_DATE.strftime('%d/%m/%Y')}")
+    phone = digits(row.get(columns.get("telefone", ""), ""))
+    if "telefone" in columns and len(phone) not in (10, 11):
+        issues.append("telefone inválido")
+    return issues, birth_date
+
+
 def analyze(input_path: Path, output_dir: Path) -> None:
     rows, columns = read_csv(input_path)
     cpf_count: dict[str, int] = {}
@@ -122,27 +163,14 @@ def analyze(input_path: Path, output_dir: Path) -> None:
     review_queue: list[dict[str, str]] = []
     for index, row in enumerate(rows, start=2):
         cpf = digits(row.get(columns["cpf"], ""))
-        birth_date = parse_birth_date(row.get(columns["nascimento"], ""))
-        issues: list[str] = []
-        if not complete_name(row.get(columns["nome"], "")):
-            issues.append("nome incompleto")
-        if not valid_cpf(cpf):
-            issues.append("cpf inválido")
-        if cpf_count.get(cpf, 0) > 1:
-            issues.append("cpf duplicado")
-        if not birth_date:
-            issues.append("nascimento inválido")
-        elif not 18 <= age_on_today(birth_date) <= 120:
-            issues.append("idade fora da faixa permitida")
-        phone = digits(row.get(columns.get("telefone", ""), ""))
-        if "telefone" in columns and len(phone) not in (10, 11):
-            issues.append("telefone inválido")
+        issues, birth_date = local_issues(row, columns, cpf_count)
 
         result = dict(row)
         result.update(
             {
                 "linha_origem": str(index),
                 "cpf_formatado": masked_cpf(cpf),
+                "idade_em_04_07_2026": str(age_on_event(birth_date)) if birth_date else "",
                 "status_local": "APROVADO" if not issues else "REPROVADO",
                 "motivos": "; ".join(issues),
             }
@@ -163,15 +191,118 @@ def analyze(input_path: Path, output_dir: Path) -> None:
                 }
             )
 
-    result_fields = list(rows[0]) + ["linha_origem", "cpf_formatado", "status_local", "motivos"] if rows else []
+    result_fields = list(rows[0]) + ["linha_origem", "cpf_formatado", "idade_em_04_07_2026", "status_local", "motivos"] if rows else []
     write_csv(output_dir / "resultado-local.csv", result_fields, results)
     write_csv(
         output_dir / "fila-conferencia-receita.csv",
         ["nome", "cpf", "nascimento", "nome_confere", "status_receita", "conferido_em", "observacoes", "link_consulta"],
         review_queue,
     )
-    print(f"Análise concluída: {len(results)} cadastro(s), {len(review_queue)} aguardando conferência manual.")
+    print(f"Análise concluída para a data da festa ({EVENT_DATE.strftime('%d/%m/%Y')}): {len(results)} cadastro(s), {len(review_queue)} aguardando conferência manual.")
     print(f"Arquivos gerados em: {output_dir.resolve()}")
+
+
+def convert_consulta(consulta_path: Path, output_dir: Path) -> None:
+    consulta_rows, consulta_columns = read_csv(consulta_path)
+    cadastro_rows, cadastro_columns = read_csv(output_dir / FIRESTORE_EXPORT.name)
+
+    cadastro_by_cpf = {digits(row.get(cadastro_columns["cpf"], "")): row for row in cadastro_rows}
+    consulta_by_cpf = {digits(row.get(consulta_columns["cpf"], "")): row for row in consulta_rows}
+    cpf_count: dict[str, int] = {}
+    for row in cadastro_rows:
+        cpf = digits(row.get(cadastro_columns["cpf"], ""))
+        cpf_count[cpf] = cpf_count.get(cpf, 0) + 1
+
+    all_cpfs = sorted(set(cadastro_by_cpf) | set(consulta_by_cpf))
+    results: list[dict[str, str]] = []
+    public_rows: list[dict[str, str]] = []
+
+    for index, cpf in enumerate(all_cpfs, start=1):
+        cadastro = cadastro_by_cpf.get(cpf)
+        consulta = consulta_by_cpf.get(cpf)
+        source = cadastro or consulta or {}
+        source_columns = cadastro_columns if cadastro else consulta_columns
+        issues, birth_date = local_issues(source, source_columns, cpf_count) if source else (["cadastro não encontrado"], None)
+        if not cadastro:
+            issues.append("não está na pré-lista")
+        if not consulta:
+            issues.append("consulta não encontrada")
+
+        status_final = status_from_checks(issues, consulta)
+        nome = (cadastro or consulta or {}).get(source_columns["nome"], "").strip()
+        cpf_formatado = masked_cpf(cpf)
+        consulta_status = normalize_header(consulta.get("status_receita", "")).upper() if consulta else ""
+        nome_confere = "SIM" if consulta and truthy(consulta.get("nome_confere", "")) else "NAO" if consulta else ""
+
+        result = {
+            **(cadastro or {}),
+            "linha_origem": str(index + 1),
+            "cpf_formatado": cpf_formatado,
+            "idade_em_04_07_2026": str(age_on_event(birth_date)) if birth_date else "",
+            "na_pre_lista": "SIM" if cadastro else "NAO",
+            "nome_confere": nome_confere,
+            "status_receita": consulta_status,
+            "processado": consulta.get("processado", "") if consulta else "",
+            "conferido_em": consulta.get("conferido_em", "") if consulta else "",
+            "observacoes_consulta": consulta.get("observacoes", "") if consulta else "",
+            "status_local": status_final,
+            "motivos": "; ".join(dict.fromkeys(issue for issue in issues if issue)),
+        }
+        results.append(result)
+
+        public_rows.append(
+            {
+                "id": str(index),
+                "nome": nome,
+                "cpf": cpf_formatado,
+                "cpfFinal": cpf_suffix(cpf),
+                "naPreLista": "true" if cadastro else "false",
+                "status": status_final.lower(),
+                "maioridadeNoEvento": "true" if birth_date and age_on_event(birth_date) >= 18 else "false",
+                "nomeConferido": "true" if nome_confere == "SIM" else "false",
+                "cpfRegular": "true" if consulta_status == "REGULAR" else "false",
+                "observacaoPublica": "Cadastro aprovado para a pré-lista." if status_final == "APROVADO" else "Cadastro em análise ou com pendência.",
+            }
+        )
+
+    result_fields = [
+        "id",
+        "nome",
+        "cpf",
+        "nascimento",
+        "telefone",
+        "email",
+        "status",
+        "consentimento",
+        "criadoEm",
+        "linha_origem",
+        "cpf_formatado",
+        "idade_em_04_07_2026",
+        "na_pre_lista",
+        "nome_confere",
+        "status_receita",
+        "processado",
+        "conferido_em",
+        "observacoes_consulta",
+        "status_local",
+        "motivos",
+    ]
+    public_fields = [
+        "id",
+        "nome",
+        "cpf",
+        "cpfFinal",
+        "naPreLista",
+        "status",
+        "maioridadeNoEvento",
+        "nomeConferido",
+        "cpfRegular",
+        "observacaoPublica",
+    ]
+    write_csv(output_dir / "resultado-local.csv", result_fields, results)
+    write_csv(output_dir / "lista-publica.csv", public_fields, public_rows)
+    print(f"Consulta convertida: {len(results)} resultado(s).")
+    print(f"Arquivos gerados: {output_dir / 'resultado-local.csv'} e {output_dir / 'lista-publica.csv'}")
 
 
 def consolidate(review_path: Path, output_dir: Path) -> None:
@@ -214,7 +345,7 @@ def update_from_firestore(output_dir: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("acao", choices=("atualizar", "analisar", "consolidar"))
+    parser.add_argument("acao", choices=("atualizar", "analisar", "consulta", "consolidar"))
     parser.add_argument("arquivo", type=Path, nargs="?")
     parser.add_argument("--saida", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
@@ -222,9 +353,14 @@ def main() -> int:
         if args.acao == "atualizar":
             update_from_firestore(args.saida)
         elif not args.arquivo:
-            raise ValueError(f"A ação {args.acao} exige o caminho de um arquivo CSV.")
+            if args.acao == "consulta":
+                convert_consulta(RESULTADO_CONSULTA, args.saida)
+            else:
+                raise ValueError(f"A ação {args.acao} exige o caminho de um arquivo CSV.")
         elif args.acao == "analisar":
             analyze(args.arquivo, args.saida)
+        elif args.acao == "consulta":
+            convert_consulta(args.arquivo, args.saida)
         else:
             consolidate(args.arquivo, args.saida)
     except (OSError, ValueError) as error:

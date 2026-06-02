@@ -172,7 +172,7 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .page-hero.compact { padding-bottom: 67px; }
 .page-hero h1 { margin: 8px 0 13px; font-size: clamp(58px, 8vw, 88px); line-height: .85; }
 .page-hero p:last-child { max-width: 570px; margin-inline: auto; }
-.form-section, .checkout-section { padding: 70px 0 100px; }
+.form-section, .checkout-section, .list-section { padding: 70px 0 100px; }
 .success-message { display: flex; gap: 15px; margin-bottom: 16px; padding: 18px; border: 1px solid rgba(107,154,105,.32); border-radius: 16px; background: rgba(107,154,105,.08); }
 .success-message .icon-orb { color: #5d8c60; background: rgba(107,154,105,.16); }
 .success-message h3 { font-size: 24px; }
@@ -208,6 +208,15 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .checkout-disclaimer { display: block; margin-top: 11px; color: var(--muted); font-size: 10px; text-align: center; }
 .mock-confirmation { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 99px; color: #5d8c60; background: rgba(107,154,105,.11); font-size: 12px; font-weight: 600; }
 .mock-unavailable { display: flex; align-items: center; gap: 8px; padding: 13px; border-radius: 12px; color: var(--orange); background: rgba(217,130,75,.1); font-size: 11px; font-weight: 600; line-height: 1.6; }
+.lookup-card { margin-inline: auto; }
+.lookup-result { margin-top: 18px; padding: 26px; border: 1px solid var(--line); border-radius: 20px; background: #fffdf9; box-shadow: var(--shadow); text-align: center; }
+.lookup-result h2 { margin: 7px 0 4px; font-size: clamp(34px, 5vw, 52px); line-height: .95; }
+.lookup-result > span { display: block; color: var(--muted); font-size: 11px; }
+.lookup-result strong { display: inline-flex; margin: 18px 0 12px; padding: 8px 14px; border-radius: 99px; color: var(--orange); background: rgba(217,130,75,.1); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+.lookup-result.status-aprovado strong { color: #5d8c60; background: rgba(107,154,105,.13); }
+.lookup-result.status-reprovado strong { color: var(--coral); background: rgba(232,111,97,.11); }
+.lookup-result p:last-child { color: var(--muted); font-size: 12px; line-height: 1.8; }
+.list-disclaimer { margin-top: 18px; color: var(--muted); font-size: 11px; line-height: 1.8; text-align: center; }
 
 @media (max-width: 900px) {
   .section { padding: 83px 0; }
@@ -248,7 +257,7 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
   .bar-note { margin-top: 17px; }
   .artist-row { gap: 15px; }
   .page-hero { padding: 135px 0 62px; }
-  .form-section, .checkout-section { padding: 45px 0 75px; }
+  .form-section, .checkout-section, .list-section { padding: 45px 0 75px; }
   .prelist-form, .order-card { padding: 20px; }
   .field-row { grid-template-columns: 1fr; gap: 0; }
   .form-bottom { flex-direction: column; align-items: stretch; }

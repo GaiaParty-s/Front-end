@@ -26,6 +26,7 @@ function Navbar() {
           <a href={`${homePrefix}#line-up`} onClick={closeMenu}>Line-up</a>
           <a href={`${homePrefix}#ingressos`} onClick={closeMenu}>Ingressos</a>
           <a href={`${homePrefix}#bar`} onClick={closeMenu}>Bar</a>
+          <Link to="/lista" onClick={closeMenu}>Lista</Link>
           <a href={`${homePrefix}#contato`} onClick={closeMenu}>Contato</a>
           <Link className="button button-small" to="/pre-lista" onClick={closeMenu}>Entrar na pré-lista</Link>
         </nav>
