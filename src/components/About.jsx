@@ -2,7 +2,7 @@ import Icon from './Icons'
 
 const highlights = [
   ['sun', 'Sunset Experience', 'Uma atmosfera desenhada para o fim de tarde.'],
-  ['music', 'Hi-Cut all night', 'Um único DJ conduzindo a experiência inteira.'],
+  ['music', 'Curadoria em segredo', 'A trilha da noite ainda guarda algumas surpresas.'],
   ['glass', 'Bar selecionado', 'Garrafas e combos escolhidos a dedo.'],
   ['star', 'Acesso limitado', 'Uma edição intimista, restrita e com poucos convidados.'],
 ]
