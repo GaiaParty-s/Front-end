@@ -1,14 +1,15 @@
 import { cert, initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 const privateDir = resolve('private-data')
 const credentialsPath = resolve(privateDir, 'firebase-service-account.json')
 const outputPath = resolve(privateDir, 'cadastros-firestore.csv')
+const exportAll = process.argv.includes('--todos')
 
 const csvCell = (value = '') => {
-  const text = String(value).replaceAll('"', '""')
+  const text = String(value ?? '').replaceAll('"', '""')
   return `"${text}"`
 }
 
@@ -24,30 +25,42 @@ const formatPhone = (value = '') => {
   return value
 }
 
+const formatCreatedAt = (value) => {
+  if (!value) return ''
+  if (typeof value.toDate === 'function') return value.toDate().toISOString()
+  return String(value)
+}
+
 try {
   const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
   initializeApp({ credential: cert(credentials) })
 
   const snapshot = await getFirestore().collection('preLista').orderBy('criadoEm', 'asc').get()
+  const documents = exportAll
+    ? snapshot.docs
+    : snapshot.docs.filter((document) => !Object.hasOwn(document.data(), 'validacaoConsulta'))
+
   const headers = ['id', 'nome', 'cpf', 'nascimento', 'telefone', 'email', 'status', 'consentimento', 'criadoEm']
-  const rows = snapshot.docs.map((document) => {
+  const rows = documents.map((document) => {
     const data = document.data()
     return headers.map((header) => {
       let value = header === 'id' ? document.id : data[header]
       if (header === 'cpf') value = formatCpf(value)
       if (header === 'telefone') value = formatPhone(value)
-      if (header === 'criadoEm') value = data.criadoEm?.toDate().toISOString()
+      if (header === 'criadoEm') value = formatCreatedAt(data.criadoEm)
       return csvCell(value)
     }).join(',')
   })
 
   await mkdir(privateDir, { recursive: true })
   await writeFile(outputPath, `\uFEFF${headers.join(',')}\n${rows.join('\n')}\n`, 'utf8')
-  console.log(`Exportação concluída: ${snapshot.size} cadastro(s).`)
+
+  console.log(`Exportacao concluida: ${documents.length} cadastro(s) exportado(s).`)
+  if (!exportAll) console.log(`${snapshot.size - documents.length} cadastro(s) ja tinham validacaoConsulta e foram ignorados.`)
   console.log(`Arquivo gerado em: ${outputPath}`)
 } catch (error) {
-  console.error('Não foi possível exportar a pré-lista.')
-  console.error(`Confirme a existência de ${credentialsPath}`)
+  console.error('Nao foi possivel exportar a pre-lista.')
+  console.error(`Confirme a existencia de ${credentialsPath}`)
   console.error(error.message)
   process.exitCode = 1
 }

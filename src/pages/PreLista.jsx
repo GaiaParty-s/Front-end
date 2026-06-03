@@ -7,6 +7,7 @@ import { cadastrarNaPreLista } from '../services/preLista'
 
 const initialForm = { nome: '', cpf: '', nascimento: '', telefone: '', email: '' }
 const EVENT_DATE = new Date('2026-07-04T12:00:00')
+const MINIMUM_BIRTH_DATE = new Date('2010-01-04T12:00:00')
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
 
@@ -55,6 +56,8 @@ const calculateAge = (birthDate) => {
   return age
 }
 
+const meetsMinimumAge = (birthDate) => new Date(`${birthDate}T12:00:00`) <= MINIMUM_BIRTH_DATE
+
 function PreLista() {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
@@ -79,7 +82,7 @@ function PreLista() {
     if (form.cpf && !isValidCpf(form.cpf)) nextErrors.cpf = 'Informe um CPF válido.'
     if (form.telefone && !/^\d{10,11}$/.test(onlyDigits(form.telefone))) nextErrors.telefone = 'Informe um telefone com DDD.'
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um e-mail válido.'
-    if (form.nascimento && (calculateAge(form.nascimento) < 18 || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para quem terá 18 anos ou mais em 04/07/2026.'
+    if (form.nascimento && (!meetsMinimumAge(form.nascimento) || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para quem terá 18 anos ou mais em 04/07/2026.'
     if (!consentimento) nextErrors.consentimento = 'Confirme o aceite para enviar seu cadastro.'
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)

@@ -12,11 +12,37 @@ private-data/firebase-service-account.json
 
 ## 2. Resultado da automacao
 
+Para baixar somente cadastros que ainda nao possuem `validacaoConsulta`, execute:
+
+```bash
+npm run export:prelista
+```
+
+Isso gera:
+
+```text
+private-data/cadastros-firestore.csv
+```
+
+Para auditar a base inteira sem filtrar, use:
+
+```bash
+npm run export:prelista:todos
+```
+
 Salve o CSV da automacao em:
 
 ```text
 private-data/ResultadoConsulta.csv
 ```
+
+Se o arquivo vier misturado, sem cabecalho ou com linhas em formatos diferentes, padronize no formato completo da automacao antes:
+
+```bash
+npm run prelista:padronizar-resultado
+```
+
+Esse comando cria um backup automatico e padroniza o CSV expandido com 18 colunas.
 
 Colunas esperadas:
 
@@ -27,7 +53,7 @@ nome,cpf,nascimento,nome_confere,status_receita,conferido_em,observacoes,process
 Campos opcionais aceitos:
 
 ```csv
-telefone,email
+link_consulta,telefone,nascimento_banco,menor_de_idade,na_pre_lista,data_inscricao,digito_verificador,comprovante_emitido,comprovante_emitido_data,consultas_consumidas
 ```
 
 Se `nome`, `nascimento`, `telefone` ou `email` forem corrigidos no CSV, o comando atualiza a collection `preLista`. Campos opcionais ausentes nao sobrescrevem os dados que ja existem no banco.

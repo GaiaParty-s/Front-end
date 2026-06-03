@@ -20,6 +20,7 @@ DEFAULT_OUTPUT = Path("private-data")
 FIRESTORE_EXPORT = DEFAULT_OUTPUT / "cadastros-firestore.csv"
 RESULTADO_CONSULTA = DEFAULT_OUTPUT / "ResultadoConsulta.csv"
 EVENT_DATE = date(2026, 7, 4)
+MINIMUM_BIRTH_DATE = date(2010, 1, 4)
 
 ALIASES = {
     "nome": {"nome", "nome completo", "nome_completo"},
@@ -73,6 +74,10 @@ def parse_birth_date(value: str) -> date | None:
 
 def age_on_event(birth_date: date) -> int:
     return EVENT_DATE.year - birth_date.year - ((EVENT_DATE.month, EVENT_DATE.day) < (birth_date.month, birth_date.day))
+
+
+def meets_minimum_age(birth_date: date) -> bool:
+    return birth_date <= MINIMUM_BIRTH_DATE
 
 
 def complete_name(value: str) -> bool:
@@ -144,7 +149,7 @@ def local_issues(row: dict[str, str], columns: dict[str, str], cpf_count: dict[s
         issues.append("cpf duplicado")
     if not birth_date:
         issues.append("nascimento inválido")
-    elif not 18 <= age_on_event(birth_date) <= 120:
+    elif not meets_minimum_age(birth_date) or age_on_event(birth_date) > 120:
         issues.append(f"menor de 18 anos em {EVENT_DATE.strftime('%d/%m/%Y')}")
     phone = digits(row.get(columns.get("telefone", ""), ""))
     if "telefone" in columns and len(phone) not in (10, 11):
@@ -258,7 +263,7 @@ def convert_consulta(consulta_path: Path, output_dir: Path) -> None:
                 "cpfFinal": cpf_suffix(cpf),
                 "naPreLista": "true" if cadastro else "false",
                 "status": status_final.lower(),
-                "maioridadeNoEvento": "true" if birth_date and age_on_event(birth_date) >= 18 else "false",
+                "maioridadeNoEvento": "true" if birth_date and meets_minimum_age(birth_date) else "false",
                 "nomeConferido": "true" if nome_confere == "SIM" else "false",
                 "cpfRegular": "true" if consulta_status == "REGULAR" else "false",
                 "observacaoPublica": "Cadastro aprovado para a pré-lista." if status_final == "APROVADO" else "Cadastro em análise ou com pendência.",

@@ -10,6 +10,7 @@ const consultaPath = resolve(privateDir, 'ResultadoConsulta.csv')
 const resultadoLocalPath = resolve(privateDir, 'resultado-local.csv')
 
 const EVENT_DATE = new Date(Date.UTC(2026, 6, 4))
+const MINIMUM_BIRTH_DATE = new Date(Date.UTC(2010, 0, 4))
 
 const parseCsv = (content) => {
   const rows = []
@@ -94,6 +95,8 @@ const ageOnEvent = (birthDate) => {
   return age
 }
 
+const meetsMinimumAge = (birthDate) => birthDate <= MINIMUM_BIRTH_DATE
+
 const validCpf = (value = '') => {
   const cpf = onlyDigits(value)
   if (cpf.length !== 11 || new Set(cpf).size === 1) return false
@@ -117,7 +120,7 @@ const stableId = (cpf) => createHash('sha256').update(onlyDigits(cpf)).digest('h
 const publicMessage = (status, reasons) => {
   if (status === 'aprovado') return 'Cadastro aprovado para a pré-lista.'
   if (status === 'pendente') return 'Cadastro recebido e ainda em análise.'
-  if (reasons.includes('menor de idade na data da festa')) return 'Cadastro não aprovado pelos critérios da pré-lista.'
+  if (reasons.includes('abaixo da idade minima na data da festa')) return 'Cadastro não aprovado pelos critérios da pré-lista.'
   return 'Cadastro em análise ou com pendência nos dados enviados.'
 }
 
@@ -133,7 +136,7 @@ const normalizeConsultaRow = (row) => {
   if (!completeName(row.nome)) reasons.push('nome incompleto')
   if (!validCpf(cpf)) reasons.push('cpf inválido')
   if (!birthDate) reasons.push('nascimento inválido')
-  else if (age < 18) reasons.push('menor de idade na data da festa')
+  else if (!meetsMinimumAge(birthDate)) reasons.push('abaixo da idade minima na data da festa')
   if (!nomeConferido) reasons.push('nome não conferido')
   if (!cpfRegular) reasons.push('cpf não regular')
   if (!processado) reasons.push('consulta não processada')
@@ -153,7 +156,7 @@ const normalizeConsultaRow = (row) => {
     status,
     nomeConferido,
     cpfRegular,
-    maioridadeNoEvento: Boolean(birthDate && age >= 18),
+    maioridadeNoEvento: Boolean(birthDate && meetsMinimumAge(birthDate)),
     processado,
     conferidoEm: row.conferido_em || '',
     observacoes: row.observacoes || '',
