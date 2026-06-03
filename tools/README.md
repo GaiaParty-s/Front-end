@@ -1,75 +1,53 @@
-# Conferência local da pré-lista
+# Conferencia da pre-lista
 
-Este fluxo gratuito reduz o trabalho manual sem consultar APIs externas.
+Este fluxo usa `private-data/ResultadoConsulta.csv` como fonte da consulta automatizada e publica somente os dados seguros para a pagina de consulta por CPF.
 
-## 1. Exporte o CSV do Firestore
+## 1. Chave do Firebase
 
-No console Firebase, acesse **Project settings > Service accounts**, gere uma nova chave privada e salve o JSON somente em:
+No console Firebase, acesse **Project settings > Service accounts**, gere uma chave privada e salve o JSON somente em:
 
 ```text
 private-data/firebase-service-account.json
 ```
 
-Para exportar e analisar tudo automaticamente, execute:
+## 2. Resultado da automacao
 
-```bash
-npm run prelista:atualizar
+Salve o CSV da automacao em:
+
+```text
+private-data/ResultadoConsulta.csv
 ```
 
-O comando cria:
-
-- `private-data/cadastros-firestore.csv`: cópia integral dos cadastros.
-- `private-data/resultado-local.csv`: resultado das validações automáticas.
-- `private-data/fila-conferencia-receita.csv`: somente cadastros aptos à revisão manual.
-
-A pasta inteira está ignorada pelo Git.
-
-## 2. Ou prepare outro CSV
-
-Exporte os cadastros para um CSV com estas colunas:
+Colunas esperadas:
 
 ```csv
-nome,cpf,nascimento,telefone,email
+nome,cpf,nascimento,nome_confere,status_receita,conferido_em,observacoes,processado
 ```
 
-A data de nascimento pode estar em `DD/MM/AAAA` ou `AAAA-MM-DD`.
+Campos opcionais aceitos:
 
-## 3. Faça a análise automática de um CSV avulso
+```csv
+telefone,email
+```
+
+Se `nome`, `nascimento`, `telefone` ou `email` forem corrigidos no CSV, o comando atualiza a collection `preLista`. Campos opcionais ausentes nao sobrescrevem os dados que ja existem no banco.
+
+## 3. Normalizar e publicar
+
+Execute:
 
 ```bash
-python tools/validar_pre_lista.py analisar private-data/cadastros-firestore.csv
+npm run prelista:producao
 ```
 
-Use este comando somente quando quiser analisar um CSV diferente da exportação do Firestore. Ele cria em `private-data/`:
+O comando:
 
-- `resultado-local.csv`: resultado de CPF, nome completo, telefone, maioridade e duplicidade.
-- `fila-conferencia-receita.csv`: somente cadastros aprovados localmente.
-
-## 4. Confira os candidatos na Receita Federal
-
-Abra o link indicado na coluna `link_consulta`. Para cada pessoa da fila:
-
-1. Consulte CPF e data de nascimento no site oficial.
-2. Compare o nome exibido no comprovante com o nome cadastrado.
-3. Preencha `nome_confere` com `sim` ou `nao`.
-4. Preencha `status_receita` com a situação apresentada, como `REGULAR`.
-5. Use `observacoes` apenas quando necessário.
-
-Não automatize a consulta pública com scraping. O site utiliza cookies e foi disponibilizado para conferência cadastral individual.
-
-## 5. Consolide a revisão
-
-```bash
-python tools/validar_pre_lista.py consolidar private-data/fila-conferencia-receita.csv
-```
-
-O comando cria:
-
-- `aprovados.csv`: maiores de idade, nome conferido e CPF regular.
-- `pendencias-revisao.csv`: registros ainda não conferidos ou reprovados.
+- le `ResultadoConsulta.csv`;
+- valida CPF, nome completo e maioridade em 04/07/2026;
+- atualiza `nome`, `nascimento`, `telefone`, `email`, `status` e `validacaoConsulta` na collection `preLista`;
+- recria a collection `preListaPublica`;
+- gera `private-data/resultado-local.csv` para auditoria local.
 
 ## Privacidade
 
-`private-data/` está no `.gitignore`. Não envie os CSVs para o GitHub e elimine os arquivos quando não forem mais necessários. CPF, nome, nascimento, e-mail e telefone são dados pessoais.
-
-Consulta pública oficial: https://solucoes.receita.fazenda.gov.br/Servicos/cpf/ConsultaSituacao/ConsultaPublica.asp
+`private-data/` esta no `.gitignore`. Nao envie CSVs, CPFs, e-mails, telefones ou chaves privadas para o GitHub.

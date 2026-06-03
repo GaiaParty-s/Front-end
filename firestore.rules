@@ -2,6 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'allyhawada13@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
     match /preLista/{cadastroId} {
       allow create: if request.resource.data.keys().hasOnly([
           'nome',
@@ -28,22 +34,22 @@ service cloud.firestore {
         && request.resource.data.consentimento == true
         && request.resource.data.status == 'pendente';
 
-      allow read, update, delete: if false;
+      allow read, update, delete: if isAdmin();
     }
 
     match /Produtos/{produtoId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /ingressos/{ingressoId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
     match /preListaPublica/{cadastroId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
   }
 }
