@@ -17,7 +17,7 @@ function Hero() {
           </div>
           <div className="hero-actions">
             <Link className="button" to="/pre-lista">Entrar na pré-lista <Icon name="arrow" size={17} /></Link>
-            <a className="button button-ghost" href="#ingressos">Ingressos em breve</a>
+            <a className="button button-ghost" href="#ingressos">Garanta já seu ingresso!</a>
           </div>
         </div>
         <div className="hero-art">

@@ -1,20 +1,20 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useProdutos } from '../hooks/useCatalogo'
 import ProductCard from './ProductCard'
-
-const filters = [
-  ['Todos', 'Todos'],
-  ['Vodkas', 'Vodka'],
-  ['Whiskys', 'Whisky'],
-  ['Licores', 'Licor'],
-  ['Energéticos', 'Energético'],
-  ['Combos', 'Combo'],
-]
 
 function BarProducts() {
   const [activeFilter, setActiveFilter] = useState('Todos')
   const produtos = useProdutos()
-  const availableProducts = produtos.filter((product) => product.ativo && (activeFilter === 'Todos' || product.categoria === activeFilter))
+  const activeProducts = useMemo(() => produtos.filter((product) => product.ativo), [produtos])
+  const filters = useMemo(() => {
+    const categories = activeProducts
+      .map((product) => product.categoria)
+      .filter((categoria, index, list) => categoria && list.indexOf(categoria) === index)
+
+    return ['Todos', ...categories]
+  }, [activeProducts])
+  const selectedFilter = filters.includes(activeFilter) ? activeFilter : 'Todos'
+  const availableProducts = activeProducts.filter((product) => selectedFilter === 'Todos' || product.categoria === selectedFilter)
 
   return (
     <section className="section bar-products" id="bar">
@@ -28,8 +28,8 @@ function BarProducts() {
           <p className="bar-note">Retire sua reserva no bar durante o evento.</p>
         </div>
         <div className="filter-row" role="tablist" aria-label="Filtrar produtos">
-          {filters.map(([label, value]) => (
-            <button className={activeFilter === value ? 'is-active' : ''} type="button" role="tab" aria-selected={activeFilter === value} onClick={() => setActiveFilter(value)} key={value}>{label}</button>
+          {filters.map((filter) => (
+            <button className={selectedFilter === filter ? 'is-active' : ''} type="button" role="tab" aria-selected={selectedFilter === filter} onClick={() => setActiveFilter(filter)} key={filter}>{filter}</button>
           ))}
         </div>
         <div className="product-grid">
