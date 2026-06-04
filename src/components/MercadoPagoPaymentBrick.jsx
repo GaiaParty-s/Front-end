@@ -24,8 +24,9 @@ function MercadoPagoPaymentBrick({ session, onError, onPayment }) {
     paymentMethods: {
       bankTransfer: 'pix',
       creditCard: 'all',
-      debitCard: 'all',
       ticket: 'all',
+      minInstallments: 1,
+      maxInstallments: 1,
     },
   }), [])
 

@@ -53,3 +53,21 @@ export const processarPaymentBrick = async (payload) => {
 
   return data
 }
+
+export const consultarPagamentoMercadoPago = async (payload) => {
+  const response = await fetch(`${apiBaseUrl}/api/mercadopago/payment-status`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Nao foi possivel consultar o pagamento.')
+  }
+
+  return data
+}
