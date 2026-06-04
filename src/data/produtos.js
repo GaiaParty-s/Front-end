@@ -8,7 +8,7 @@ const produtos = [
     imagem: '/produtos/vodka-absolut.jpg',
     tipo: 'produto',
     estoque: 12,
-    ativo: true,
+    ativo: false,
   },
   {
     id: 2,
@@ -19,7 +19,7 @@ const produtos = [
     imagem: '/produtos/red-label.jpg',
     tipo: 'produto',
     estoque: 8,
-    ativo: true,
+    ativo: false,
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const produtos = [
     tipo: 'combo',
     itens: ['Vodka', '4 energéticos', 'Gelo'],
     estoque: 10,
-    ativo: true,
+    ativo: false,
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ const produtos = [
     imagem: '/produtos/licor.jpg',
     tipo: 'produto',
     estoque: 6,
-    ativo: true,
+    ativo: false,
   },
   {
     id: 5,
@@ -53,7 +53,7 @@ const produtos = [
     imagem: '/produtos/energetico.jpg',
     tipo: 'produto',
     estoque: 18,
-    ativo: true,
+    ativo: false,
   },
   {
     id: 6,
@@ -65,7 +65,7 @@ const produtos = [
     tipo: 'combo',
     itens: ['Whisky', '4 energéticos', 'Gelo'],
     estoque: 4,
-    ativo: true,
+    ativo: false,
   },
 ]
 
