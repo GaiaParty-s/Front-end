@@ -18,12 +18,17 @@
     "prelista:normalizar-resultado": "node tools/normalizar_resultado_consulta.mjs",
     "prelista:padronizar-resultado": "node tools/padronizar_resultado_consulta_expandido.mjs",
     "prelista:publicar-lista": "node tools/publicar_lista_publica.mjs",
+    "prelista:migrar-lista": "node tools/migrar_para_lista.mjs --apply",
+    "prelista:migrar-lista:dry": "node tools/migrar_para_lista.mjs",
+    "cleanup:prelista-publica": "node tools/limpar_pre_lista_publica.mjs --apply",
+    "cleanup:prelista-publica:dry": "node tools/limpar_pre_lista_publica.mjs",
     "prelista:producao": "node tools/publicar_lista_publica.mjs",
     "prelista:atualizar": "python tools/validar_pre_lista.py atualizar",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mercadopago/sdk-react": "^1.0.7",
     "firebase": "^12.14.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

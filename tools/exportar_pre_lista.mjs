@@ -35,7 +35,8 @@ try {
   const credentials = JSON.parse(await readFile(credentialsPath, 'utf8'))
   initializeApp({ credential: cert(credentials) })
 
-  const snapshot = await getFirestore().collection('preLista').orderBy('criadoEm', 'asc').get()
+  const collectionName = process.argv.includes('--prelista-antiga') ? 'preLista' : 'Lista'
+  const snapshot = await getFirestore().collection(collectionName).orderBy('criadoEm', 'asc').get()
   const documents = exportAll
     ? snapshot.docs
     : snapshot.docs.filter((document) => !Object.hasOwn(document.data(), 'validacaoConsulta'))
@@ -55,7 +56,7 @@ try {
   await mkdir(privateDir, { recursive: true })
   await writeFile(outputPath, `\uFEFF${headers.join(',')}\n${rows.join('\n')}\n`, 'utf8')
 
-  console.log(`Exportacao concluida: ${documents.length} cadastro(s) exportado(s).`)
+  console.log(`Exportacao concluida de ${collectionName}: ${documents.length} cadastro(s) exportado(s).`)
   if (!exportAll) console.log(`${snapshot.size - documents.length} cadastro(s) ja tinham validacaoConsulta e foram ignorados.`)
   console.log(`Arquivo gerado em: ${outputPath}`)
 } catch (error) {

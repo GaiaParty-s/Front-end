@@ -1,19 +1,27 @@
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
-import { db } from './firebase'
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
 
 export const cadastrarNaPreLista = async (form) => {
-  const cpf = onlyDigits(form.cpf)
-
-  return setDoc(doc(db, 'preLista', cpf), {
-    nome: form.nome.trim().replace(/\s+/g, ' '),
-    cpf,
-    nascimento: form.nascimento,
-    telefone: onlyDigits(form.telefone),
-    email: form.email.trim().toLowerCase(),
-    criadoEm: serverTimestamp(),
-    consentimento: true,
-    status: 'pendente',
+  const response = await fetch(`${apiBaseUrl}/api/lista/cadastro`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      nome: form.nome.trim().replace(/\s+/g, ' '),
+      cpf: onlyDigits(form.cpf),
+      nascimento: form.nascimento,
+      telefone: onlyDigits(form.telefone),
+      email: form.email.trim().toLowerCase(),
+    }),
   })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Nao foi possivel cadastrar.')
+  }
+
+  return data
 }

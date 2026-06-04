@@ -8,7 +8,13 @@ function ProductCard({ product }) {
     <article className="product-card">
       <div className={`product-image category-${product.categoria.toLowerCase().replace('é', 'e')}`}>
         <span>{initials(product.nome)}</span>
-        <img src={product.imagem} alt={product.nome} onError={(event) => { event.currentTarget.style.display = 'none' }} />
+        <img
+          key={product.imagem}
+          src={product.imagem}
+          alt={product.nome}
+          onError={(event) => { event.currentTarget.hidden = true }}
+          onLoad={(event) => { event.currentTarget.hidden = false }}
+        />
       </div>
       <div className="product-content">
         <div className="product-meta">

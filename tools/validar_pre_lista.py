@@ -20,7 +20,7 @@ DEFAULT_OUTPUT = Path("private-data")
 FIRESTORE_EXPORT = DEFAULT_OUTPUT / "cadastros-firestore.csv"
 RESULTADO_CONSULTA = DEFAULT_OUTPUT / "ResultadoConsulta.csv"
 EVENT_DATE = date(2026, 7, 4)
-MINIMUM_BIRTH_DATE = date(2010, 1, 4)
+MINIMUM_BIRTH_DATE = date(2010, 7, 4)
 
 ALIASES = {
     "nome": {"nome", "nome completo", "nome_completo"},

@@ -1,16 +1,25 @@
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from './firebase'
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
 
-const cpfHash = async (cpf) => {
-  const data = new TextEncoder().encode(onlyDigits(cpf))
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  return [...new Uint8Array(hashBuffer)].map((byte) => byte.toString(16).padStart(2, '0')).join('').slice(0, 32)
+const postLista = async (path, cpf) => {
+  const response = await fetch(`${apiBaseUrl}/api/lista/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ cpf: onlyDigits(cpf) }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Nao foi possivel consultar agora.')
+  }
+
+  return data.resultado || null
 }
 
-export const consultarSituacaoPreLista = async (cpf) => {
-  const id = await cpfHash(cpf)
-  const snapshot = await getDoc(doc(db, 'preListaPublica', id))
-  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null
-}
+export const consultarSituacaoPreLista = (cpf) => postLista('consultar', cpf)
+
+export const conferirCpfLista = (cpf) => postLista('conferir-cpf', cpf)

@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
-import { consultarSituacaoPreLista } from '../services/listaPublica'
+import { conferirCpfLista, consultarSituacaoPreLista } from '../services/listaPublica'
 
 const statusLabel = {
   aprovado: 'Aprovado',
-  pendente: 'Em análise',
-  reprovado: 'Pendência',
+  pago: 'Pago',
+  pendente: 'Pendente',
+  recusado: 'Recusado',
+  reprovado: 'Recusado',
 }
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
@@ -18,6 +20,17 @@ const formatCpf = (value) =>
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+
+const whatsappUrl = (resultado) => {
+  const message = [
+    'Oi, preciso de ajuda com minha pre-lista.',
+    `Nome: ${resultado?.nome || ''}`,
+    `CPF final: ${resultado?.cpfFinal || ''}`,
+    `Status: ${statusLabel[resultado?.status] || resultado?.status || ''}`,
+  ].join('\n')
+
+  return `https://wa.me/5511962687827?text=${encodeURIComponent(message)}`
+}
 
 function ListaPublica() {
   const [cpf, setCpf] = useState('')
@@ -41,8 +54,22 @@ function ListaPublica() {
     try {
       setResultado(await consultarSituacaoPreLista(cpf))
       setConsultado(true)
-    } catch {
-      setErro('Não foi possível consultar agora. Tente novamente em alguns instantes.')
+    } catch (error) {
+      setErro(error.message)
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  const conferirCpf = async () => {
+    setErro('')
+    setCarregando(true)
+
+    try {
+      setResultado(await conferirCpfLista(cpf))
+      setConsultado(true)
+    } catch (error) {
+      setErro(error.message)
     } finally {
       setCarregando(false)
     }
@@ -54,9 +81,9 @@ function ListaPublica() {
       <main className="inner-page">
         <section className="page-hero compact">
           <div className="container">
-            <p className="eyebrow">Pré-lista oficial</p>
-            <h1>Confira sua <em>situação.</em></h1>
-            <p>Digite seu CPF para consultar o status da análise. A página não exibe a lista completa de convidados.</p>
+            <p className="eyebrow">Lista oficial</p>
+            <h1>Confira sua <em>situacao.</em></h1>
+            <p>Digite seu CPF para consultar se esta pendente, aprovado, pago ou recusado.</p>
           </div>
         </section>
         <section className="list-section">
@@ -66,7 +93,7 @@ function ListaPublica() {
                 <span>01</span>
                 <div>
                   <h2>Consulta individual</h2>
-                  <p>Use o mesmo CPF enviado no cadastro da pré-lista.</p>
+                  <p>Use o mesmo CPF enviado no cadastro da pre-lista.</p>
                 </div>
               </div>
               <label className="field field-full">
@@ -75,7 +102,7 @@ function ListaPublica() {
                 {erro && <small>{erro}</small>}
               </label>
               <button className="button button-wide" type="submit" disabled={carregando}>
-                {carregando ? 'Consultando...' : 'Consultar situação'}
+                {carregando ? 'Consultando...' : 'Consultar situacao'}
               </button>
             </form>
 
@@ -84,24 +111,34 @@ function ListaPublica() {
                 <p className="eyebrow">Resultado encontrado</p>
                 <h2>{resultado.nome}</h2>
                 <span>CPF final {resultado.cpfFinal}</span>
-                <strong>{statusLabel[resultado.status] || 'Em análise'}</strong>
+                <strong>{statusLabel[resultado.status] || 'Pendente'}</strong>
                 <p>{resultado.observacaoPublica}</p>
+                {resultado.status === 'pendente' && (
+                  <button className="button button-small" type="button" disabled={carregando} onClick={conferirCpf}>
+                    {carregando ? 'Conferindo...' : 'Conferir CPF agora'}
+                  </button>
+                )}
+                {(resultado.status === 'recusado' || resultado.status === 'reprovado') && (
+                  <a className="button button-small" href={whatsappUrl(resultado)} target="_blank" rel="noreferrer">
+                    Falar no WhatsApp
+                  </a>
+                )}
               </article>
             )}
 
             {consultado && !resultado && (
-              <div className="lookup-result status-reprovado">
-                <p className="eyebrow">Não encontrado</p>
-                <h2>CPF não localizado</h2>
-                <p>Confira se o número foi digitado corretamente ou faça seu cadastro na pré-lista.</p>
-                <Link className="button button-small" to="/pre-lista">Entrar na pré-lista</Link>
+              <div className="lookup-result status-recusado">
+                <p className="eyebrow">Nao encontrado</p>
+                <h2>CPF nao localizado</h2>
+                <p>Confira se o numero foi digitado corretamente ou faca seu cadastro na pre-lista.</p>
+                <Link className="button button-small" to="/pre-lista">Entrar na pre-lista</Link>
               </div>
             )}
 
             <p className="list-disclaimer">
-              A aprovação final poderá exigir documento oficial com foto na entrada. CPF completo, telefone, e-mail e data de nascimento permanecem protegidos.
+              A aprovacao final podera exigir documento oficial com foto na entrada. CPF completo, telefone, e-mail e data de nascimento permanecem protegidos.
             </p>
-            <Link className="back-link" to="/">← Voltar para o evento</Link>
+            <Link className="back-link" to="/">Voltar para o evento</Link>
           </div>
         </section>
       </main>

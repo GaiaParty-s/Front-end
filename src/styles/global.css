@@ -215,6 +215,9 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .lookup-result strong { display: inline-flex; margin: 18px 0 12px; padding: 8px 14px; border-radius: 99px; color: var(--orange); background: rgba(217,130,75,.1); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
 .lookup-result.status-aprovado strong { color: #5d8c60; background: rgba(107,154,105,.13); }
 .lookup-result.status-reprovado strong { color: var(--coral); background: rgba(232,111,97,.11); }
+.lookup-result.status-pago strong { color: #5d8c60; background: rgba(107,154,105,.13); }
+.lookup-result.status-recusado strong { color: var(--coral); background: rgba(232,111,97,.11); }
+.lookup-result .button { margin-top: 14px; }
 .lookup-result p:last-child { color: var(--muted); font-size: 12px; line-height: 1.8; }
 .list-disclaimer { margin-top: 18px; color: var(--muted); font-size: 11px; line-height: 1.8; text-align: center; }
 

@@ -7,7 +7,7 @@ import { cadastrarNaPreLista } from '../services/preLista'
 
 const initialForm = { nome: '', cpf: '', nascimento: '', telefone: '', email: '' }
 const EVENT_DATE = new Date('2026-07-04T12:00:00')
-const MINIMUM_BIRTH_DATE = new Date('2010-01-04T12:00:00')
+const MINIMUM_BIRTH_DATE = new Date('2010-07-04T12:00:00')
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
 
@@ -79,10 +79,10 @@ function PreLista() {
       if (!value.trim()) nextErrors[field] = 'Preencha este campo.'
     })
     if (form.nome && !isCompleteName(form.nome)) nextErrors.nome = 'Informe seu nome completo.'
-    if (form.cpf && !isValidCpf(form.cpf)) nextErrors.cpf = 'Informe um CPF válido.'
+    if (form.cpf && !isValidCpf(form.cpf)) nextErrors.cpf = 'Informe um CPF valido.'
     if (form.telefone && !/^\d{10,11}$/.test(onlyDigits(form.telefone))) nextErrors.telefone = 'Informe um telefone com DDD.'
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um e-mail válido.'
-    if (form.nascimento && (!meetsMinimumAge(form.nascimento) || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pré-lista é permitida apenas para quem terá 18 anos ou mais em 04/07/2026.'
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um e-mail valido.'
+    if (form.nascimento && (!meetsMinimumAge(form.nascimento) || calculateAge(form.nascimento) > 120)) nextErrors.nascimento = 'A pre-lista e permitida apenas para quem tera 16 anos ou mais em 04/07/2026.'
     if (!consentimento) nextErrors.consentimento = 'Confirme o aceite para enviar seu cadastro.'
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors)
@@ -97,8 +97,8 @@ function PreLista() {
       setSent(true)
       setForm(initialForm)
       setConsentimento(false)
-    } catch {
-      setSubmitError('Este CPF já está cadastrado na pré-lista ou os dados foram recusados pela validação.')
+    } catch (error) {
+      setSubmitError(error.message || 'Este CPF ja esta cadastrado na pre-lista ou os dados foram recusados pela validacao.')
     } finally {
       setSubmitting(false)
     }
@@ -111,7 +111,7 @@ function PreLista() {
         <section className="page-hero">
           <div className="container">
             <p className="eyebrow">Seu lugar no sunset</p>
-            <h1>Entre na <em>pré-lista.</em></h1>
+            <h1>Entre na <em>pre-lista.</em></h1>
             <p>Cadastre seus dados para receber novidades e iniciar sua jornada para a Sunset Sessions.</p>
           </div>
         </section>
@@ -120,14 +120,14 @@ function PreLista() {
             {sent && (
               <div className="success-message">
                 <div className="icon-orb"><Icon name="check" size={24} /></div>
-                <div><h3>Cadastro recebido!</h3><p>Seu envio foi registrado com sucesso. A aprovação e o pagamento serão conectados em uma próxima etapa.</p></div>
+                <div><h3>Cadastro recebido!</h3><p>Seu envio foi registrado com sucesso. A aprovacao e o pagamento serao conectados em uma proxima etapa.</p></div>
               </div>
             )}
             {submitError && <div className="form-error-message">{submitError}</div>}
             <form className="prelist-form" onSubmit={handleSubmit} noValidate>
               <div className="form-heading">
                 <span>01</span>
-                <div><h2>Informações pessoais</h2><p>Preencha os campos abaixo para solicitar sua entrada na lista.</p></div>
+                <div><h2>Informacoes pessoais</h2><p>Preencha os campos abaixo para solicitar sua entrada na lista.</p></div>
               </div>
               <label className="field field-full">
                 <span>Nome completo</span>
@@ -163,15 +163,15 @@ function PreLista() {
                   setConsentimento(event.target.checked)
                   setErrors({ ...errors, consentimento: '' })
                 }} />
-                <span>Autorizo o armazenamento dos meus dados para análise e contato sobre a pré-lista da Sunset Sessions.</span>
+                <span>Autorizo o armazenamento dos meus dados para analise e contato sobre a pre-lista da Sunset Sessions.</span>
               </label>
               {errors.consentimento && <small className="consent-error">{errors.consentimento}</small>}
               <div className="form-bottom">
-                <p>Ao enviar, você confirma que terá 18 anos ou mais em 04/07/2026.</p>
+                <p>Ao enviar, voce confirma que tera 16 anos ou mais em 04/07/2026.</p>
                 <button className="button" type="submit" disabled={submitting}>{submitting ? 'Enviando...' : 'Enviar cadastro'} {!submitting && <Icon name="arrow" size={17} />}</button>
               </div>
             </form>
-            <Link className="back-link" to="/">← Voltar para o evento</Link>
+            <Link className="back-link" to="/">Voltar para o evento</Link>
           </div>
         </section>
       </main>

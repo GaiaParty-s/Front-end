@@ -4,8 +4,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
       return request.auth != null
-        && request.auth.token.email == 'allyhawada13@gmail.com'
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+        'allyhawada13@gmail.com',
+        'josufaria18@gmail.com',
+        'darawest7@gmail.com'
+      ];
     }
 
     match /preLista/{cadastroId} {
@@ -37,6 +41,11 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /Lista/{cadastroId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if false;
+    }
+
     match /Produtos/{produtoId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -50,6 +59,11 @@ service cloud.firestore {
     match /preListaPublica/{cadastroId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /pedidos/{pedidoId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if false;
     }
   }
 }

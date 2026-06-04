@@ -10,7 +10,7 @@ const consultaPath = resolve(privateDir, 'ResultadoConsulta.csv')
 const resultadoLocalPath = resolve(privateDir, 'resultado-local.csv')
 
 const EVENT_DATE = new Date(Date.UTC(2026, 6, 4))
-const MINIMUM_BIRTH_DATE = new Date(Date.UTC(2010, 0, 4))
+const MINIMUM_BIRTH_DATE = new Date(Date.UTC(2010, 6, 4))
 
 const parseCsv = (content) => {
   const rows = []
@@ -141,7 +141,7 @@ const normalizeConsultaRow = (row) => {
   if (!cpfRegular) reasons.push('cpf não regular')
   if (!processado) reasons.push('consulta não processada')
 
-  const status = !processado ? 'pendente' : reasons.length ? 'reprovado' : 'aprovado'
+  const status = !processado ? 'pendente' : reasons.length ? 'recusado' : 'aprovado'
 
   return {
     cpf,
@@ -206,10 +206,12 @@ try {
   let missingPrivate = 0
 
   for (const row of uniqueRows) {
+    const listaDoc = await db.collection('Lista').doc(row.cpf).get()
     const privateDoc = await db.collection('preLista').doc(row.cpf).get()
     const isInPreList = privateDoc.exists
+    const isInLista = listaDoc.exists || privateDoc.exists
 
-    if (isInPreList) {
+    if (isInLista) {
       const privateUpdate = {
         nome: row.nome,
         nascimento: row.nascimentoIso,
@@ -229,14 +231,19 @@ try {
       if (row.telefone) privateUpdate.telefone = row.telefone
       if (row.email) privateUpdate.email = row.email
 
-      batch.update(privateDoc.ref, privateUpdate)
+      batch.set(db.collection('Lista').doc(row.cpf), privateUpdate, { merge: true })
       operations += 1
       updatedPrivate += 1
+
+      if (isInPreList) {
+        batch.update(privateDoc.ref, privateUpdate)
+        operations += 1
+      }
     } else {
       missingPrivate += 1
     }
 
-    if (isInPreList) {
+    if (isInLista) {
       batch.set(publicRef.doc(stableId(row.cpf)), {
         nome: row.nome,
         cpfFinal: row.cpfFinal,

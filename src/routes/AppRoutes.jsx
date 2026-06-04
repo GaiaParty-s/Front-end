@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import CheckoutMock from '../pages/CheckoutMock'
+import CheckoutReturn from '../pages/CheckoutReturn'
 import Home from '../pages/Home'
 import ListaPublica from '../pages/ListaPublica'
 import PreLista from '../pages/PreLista'
@@ -11,6 +12,7 @@ function AppRoutes() {
       <Route path="/pre-lista" element={<PreLista />} />
       <Route path="/lista" element={<ListaPublica />} />
       <Route path="/checkout" element={<CheckoutMock />} />
+      <Route path="/checkout-retorno" element={<CheckoutReturn />} />
     </Routes>
   )
 }
