@@ -9,6 +9,7 @@ if (publicKey) {
 }
 
 function MercadoPagoPaymentBrick({ session, onError, onPayment }) {
+  const paymentMethod = session.paymentFee?.method
   const initialization = useMemo(() => ({
     amount: session.amount,
     payer: {
@@ -20,15 +21,35 @@ function MercadoPagoPaymentBrick({ session, onError, onPayment }) {
     },
   }), [session])
 
-  const customization = useMemo(() => ({
-    paymentMethods: {
-      bankTransfer: 'pix',
-      creditCard: 'all',
-      ticket: 'all',
-      minInstallments: 1,
-      maxInstallments: 1,
-    },
-  }), [])
+  const customization = useMemo(() => {
+    if (paymentMethod === 'pix_qrcode') {
+      return {
+        paymentMethods: {
+          bankTransfer: 'pix',
+          minInstallments: 1,
+          maxInstallments: 1,
+        },
+      }
+    }
+
+    if (paymentMethod === 'boleto') {
+      return {
+        paymentMethods: {
+          ticket: 'all',
+          minInstallments: 1,
+          maxInstallments: 1,
+        },
+      }
+    }
+
+    return {
+      paymentMethods: {
+        creditCard: 'all',
+        minInstallments: 1,
+        maxInstallments: 1,
+      },
+    }
+  }, [paymentMethod])
 
   if (!publicKey) {
     return <div className="form-error-message">Chave publica do Mercado Pago nao configurada.</div>

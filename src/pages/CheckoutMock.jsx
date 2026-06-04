@@ -5,7 +5,7 @@ import Icon from '../components/Icons'
 import MercadoPagoPaymentBrick from '../components/MercadoPagoPaymentBrick'
 import Navbar from '../components/Navbar'
 import { useIngressos, useProdutos } from '../hooks/useCatalogo'
-import { consultarPagamentoMercadoPago, criarPagamentoMercadoPago, criarSessaoPaymentBrick } from '../services/pagamentos'
+import { consultarPagamentoMercadoPago, criarPagamentoMercadoPago, criarPedidoPixPrivado, criarSessaoPaymentBrick } from '../services/pagamentos'
 import { formatCurrency } from '../utils/format'
 
 const onlyDigits = (value) => value.replace(/\D/g, '')
@@ -21,13 +21,14 @@ const hasPaymentBrick = Boolean(import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY)
 const whatsappNumber = '5511962687827'
 
 const paymentFees = [
-  { label: 'Cartao de credito a vista', detail: 'Na hora', feeLabel: '4,98%', rate: 0.0498 },
-  { label: 'Pix no QrCode', detail: 'Confirmacao na hora', feeLabel: '0,99%', rate: 0.0099 },
-  { label: 'Boleto', detail: '3 dias', feeLabel: 'R$ 3,49', fixedFee: 3.49 },
-  { label: 'Pix no privado', detail: 'Confirmacao manual via WhatsApp', feeLabel: '0,00%', rate: 0, highlighted: true },
+  { id: 'credit_card', label: 'Cartao de credito a vista', detail: 'Na hora', feeLabel: '4,98%', rate: 0.0498 },
+  { id: 'pix_qrcode', label: 'Pix no QrCode', detail: 'Confirmacao na hora', feeLabel: '0,99%', rate: 0.0099 },
+  { id: 'boleto', label: 'Boleto', detail: '3 dias', feeLabel: 'R$ 3,49', fixedFee: 3.49 },
+  { id: 'pix_private', label: 'Pix no privado', detail: 'Confirmacao manual via WhatsApp', feeLabel: '0,00%', rate: 0, highlighted: true },
 ]
 
-const applyFee = (amount, fee) => amount + (fee.fixedFee || amount * fee.rate)
+const roundCurrency = (value) => Number(Number(value).toFixed(2))
+const applyFee = (amount, fee) => roundCurrency(fee.fixedFee ? amount + fee.fixedFee : amount / (1 - fee.rate))
 
 function CheckoutMock() {
   const [params] = useSearchParams()
@@ -38,6 +39,8 @@ function CheckoutMock() {
   const [session, setSession] = useState(null)
   const [paymentResult, setPaymentResult] = useState(null)
   const [checkingPayment, setCheckingPayment] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('credit_card')
+  const [pixLoading, setPixLoading] = useState(false)
   const produtos = useProdutos()
   const ingressos = useIngressos()
   const isProduct = params.get('tipo') === 'produto'
@@ -50,10 +53,14 @@ function CheckoutMock() {
   const pixData = paymentResult?.transactionData || paymentResult?.pointOfInteraction?.transaction_data || null
   const statusLabel = paymentResult?.status ? paymentResult.status.toUpperCase() : ''
   const pixTotal = applyFee(total, paymentFees.find((fee) => fee.highlighted))
+  const mercadoPagoFees = paymentFees.filter((fee) => !fee.highlighted)
+  const selectedFee = paymentFees.find((fee) => fee.id === selectedPaymentMethod) || mercadoPagoFees[0]
+  const totalWithFee = applyFee(total, selectedFee)
 
-  const pixWhatsappUrl = useMemo(() => {
+  const buildPixWhatsappUrl = (pedido = {}) => {
     const message = [
       'Oi, quero pagar no Pix e confirmar meu pedido no privado.',
+      `Pedido: ${pedido.pedidoId || 'gerando no site'}`,
       `Tipo: ${isProduct ? 'Produto' : 'Ingresso'}`,
       `Item: ${item?.nome || ''}`,
       `Quantidade: ${quantidade}`,
@@ -63,7 +70,7 @@ function CheckoutMock() {
     ].join('\n')
 
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
-  }, [cpf, isProduct, item, pixTotal, quantidade, total])
+  }
 
   const handleCheckout = async (event) => {
     event.preventDefault()
@@ -83,6 +90,7 @@ function CheckoutMock() {
           id: item.id,
           quantidade,
           cpf: onlyDigits(cpf),
+          paymentMethod: selectedPaymentMethod,
         })
 
         window.location.href = payment.initPoint
@@ -94,6 +102,7 @@ function CheckoutMock() {
         id: item.id,
         quantidade,
         cpf: onlyDigits(cpf),
+        paymentMethod: selectedPaymentMethod,
       })
 
       setSession(checkoutSession)
@@ -148,7 +157,31 @@ function CheckoutMock() {
       return
     }
 
-    window.open(pixWhatsappUrl, '_blank', 'noopener,noreferrer')
+    setPixLoading(true)
+    setError('')
+
+    criarPedidoPixPrivado({
+      tipo: isProduct ? 'produto' : 'ingresso',
+      id: item.id,
+      quantidade,
+      cpf: onlyDigits(cpf),
+    })
+      .then((pedido) => {
+        setPaymentResult({
+          id: pedido.pedidoId,
+          pedidoId: pedido.pedidoId,
+          status: pedido.status,
+          paymentMethodId: 'pix_privado',
+          paymentTypeId: 'manual',
+        })
+        window.open(buildPixWhatsappUrl(pedido), '_blank', 'noopener,noreferrer')
+      })
+      .catch((pixError) => {
+        setError(pixError.message)
+      })
+      .finally(() => {
+        setPixLoading(false)
+      })
   }
 
   return (
@@ -195,6 +228,7 @@ function CheckoutMock() {
                     setQuantidade(Math.max(1, Math.min(Number(event.target.value) || 1, 10)))
                     setSession(null)
                     setPaymentResult(null)
+                    setCheckingPayment(false)
                   }}
                 />
               </div>
@@ -216,9 +250,28 @@ function CheckoutMock() {
               <div className="fee-panel" aria-label="Taxas por forma de pagamento">
                 <div className="fee-panel-head">
                   <div>
-                    <p className="eyebrow">Taxas transparentes</p>
-                    <strong>O total final muda conforme o metodo escolhido.</strong>
+                    <p className="eyebrow">Forma de pagamento</p>
+                    <strong>Escolha como quer pagar no Mercado Pago.</strong>
                   </div>
+                </div>
+                <div className="payment-method-options">
+                  {mercadoPagoFees.map((fee) => (
+                    <button
+                      className={`payment-method-option ${selectedPaymentMethod === fee.id ? 'is-selected' : ''}`}
+                      key={fee.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod(fee.id)
+                        setSession(null)
+                        setPaymentResult(null)
+                        setCheckingPayment(false)
+                        setError('')
+                      }}
+                    >
+                      <span>{fee.label}</span>
+                      <strong>{formatCurrency(applyFee(total, fee))}</strong>
+                    </button>
+                  ))}
                 </div>
                 <div className="fee-list">
                   {paymentFees.map((fee) => (
@@ -234,8 +287,9 @@ function CheckoutMock() {
                     </div>
                   ))}
                 </div>
-                <p>As taxas sao exibidas antes da escolha da forma de pagamento. No Pix, a confirmacao e feita no privado sem taxa e o pedido e marcado como pago manualmente pela organizacao.</p>
+                <p>A taxa e recalculada no gateway antes da cobranca. No Pix privado, a confirmacao e feita no WhatsApp sem taxa e o pedido e marcado como pago manualmente pela organizacao.</p>
               </div>
+              <div className="order-total final-total"><span>Total no Mercado Pago</span><strong>{formatCurrency(totalWithFee)}</strong></div>
               {error && <div className="form-error-message">{error}</div>}
               {paymentResult && (
                 <div className="mock-confirmation">
@@ -260,8 +314,8 @@ function CheckoutMock() {
                 <div className="mock-unavailable"><Icon name="ticket" size={18} /><span>Este item nao esta disponivel para compra.</span></div>
               ) : session ? (
                 <>
-                  <button className="button button-wide button-outline pix-whatsapp" type="button" onClick={handlePixCheckout}>
-                    Pagar no Pix pelo WhatsApp <Icon name="arrow" size={17} />
+                  <button className="button button-wide button-outline pix-whatsapp" disabled={pixLoading} type="button" onClick={handlePixCheckout}>
+                    {pixLoading ? 'Registrando pedido Pix...' : 'Pagar no Pix pelo WhatsApp'} <Icon name="arrow" size={17} />
                   </button>
                   <MercadoPagoPaymentBrick
                     session={session}
@@ -271,10 +325,10 @@ function CheckoutMock() {
                 </>
               ) : (
                 <div className="checkout-actions">
-                  <button className="button button-wide button-outline" type="button" onClick={handlePixCheckout}>
-                    Pagar no Pix pelo WhatsApp <Icon name="arrow" size={17} />
+                  <button className="button button-wide button-outline" disabled={pixLoading} type="button" onClick={handlePixCheckout}>
+                    {pixLoading ? 'Registrando pedido Pix...' : 'Pagar no Pix pelo WhatsApp'} <Icon name="arrow" size={17} />
                   </button>
-                  <button className="button button-wide" disabled={loading} type="submit">{loading ? 'Validando CPF...' : 'Continuar para Mercado Pago'} <Icon name="arrow" size={17} /></button>
+                  <button className="button button-wide" disabled={loading} type="submit">{loading ? 'Validando CPF...' : `Pagar ${formatCurrency(totalWithFee)} no Mercado Pago`} <Icon name="arrow" size={17} /></button>
                 </div>
               )}
               <small className="checkout-disclaimer">{hasPaymentBrick ? 'Os dados sensiveis do pagamento sao processados pelo Mercado Pago; o site nao armazena dados de cartao. Pix e tratado no WhatsApp para confirmacao manual.' : 'O pagamento sera aberto no checkout seguro do Mercado Pago ate a chave publica do checkout embutido ser configurada. Pix e tratado no WhatsApp para confirmacao manual.'}</small>

@@ -71,3 +71,21 @@ export const consultarPagamentoMercadoPago = async (payload) => {
 
   return data
 }
+
+export const criarPedidoPixPrivado = async (payload) => {
+  const response = await fetch(`${apiBaseUrl}/api/pedidos/pix-privado`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Nao foi possivel registrar o pedido Pix.')
+  }
+
+  return data
+}

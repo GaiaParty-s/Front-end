@@ -210,6 +210,11 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .fee-panel { margin: 0 0 18px; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,244,232,.55); }
 .fee-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .fee-panel-head strong { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; }
+.payment-method-options { display: grid; gap: 8px; margin-bottom: 14px; }
+.payment-method-option { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--brown); background: rgba(255,255,255,.45); text-align: left; transition: .2s; }
+.payment-method-option span, .payment-method-option strong { font-size: 11px; font-weight: 600; line-height: 1.4; }
+.payment-method-option strong { color: var(--coral); }
+.payment-method-option.is-selected { border-color: rgba(232,111,97,.56); background: rgba(232,111,97,.09); box-shadow: 0 8px 18px rgba(232,111,97,.08); }
 .fee-list { border-top: 1px solid var(--line); }
 .fee-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .fee-row span, .fee-row strong { display: block; font-size: 11px; font-weight: 600; line-height: 1.4; }
@@ -218,6 +223,7 @@ h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
 .fee-row.is-highlighted { color: #5d8c60; }
 .fee-row.is-highlighted strong { color: #5d8c60; }
 .fee-panel > p { margin-top: 11px; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.final-total { margin-top: -2px; padding-top: 15px; border-top: 1px solid var(--line); }
 .mock-confirmation { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 99px; color: #5d8c60; background: rgba(107,154,105,.11); font-size: 12px; font-weight: 600; }
 .mock-unavailable { display: flex; align-items: center; gap: 8px; padding: 13px; border-radius: 12px; color: var(--orange); background: rgba(217,130,75,.1); font-size: 11px; font-weight: 600; line-height: 1.6; }
 .pix-box { margin-top: 14px; padding: 16px; border: 1px solid rgba(232,111,97,.22); border-radius: 16px; background: rgba(232,111,97,.06); }
